@@ -1,5 +1,152 @@
 module InsideOutNPF
 
-# Write your package code here.
+include("structures.jl")
+include("dynamics.jl")
+include("policies.jl")
+include("closedloops.jl")
+include("adaptive.jl")
+include("bijector.jl")
+include("utils.jl")
+
+include("ibis_methods.jl")
+include("smc_methods.jl")
+include("sampling.jl")
+include("algorithms.jl")
+
+
+export categorical
+export multinomial_resampling!
+export systematic_resampling!
+export normalize_weights!
+export effective_sample_size
+
+export view_struct
+
+export ibis_info_gain_increment
+export rao_blackwell_info_gain_increment
+
+export Tanh
+
+export Gaussian
+export StateStruct
+export IBISParamStruct
+export RaoBlackwellParamStruct
+
+export RaoBlackwellReference
+export IBISReference
+
+export StochasticDynamics
+
+export dynamics_mean
+export dynamics_covar
+export dynamics_sample
+export dynamics_logpdf
+
+export IBISDynamics
+
+export ibis_conditional_dynamics_mean
+export ibis_conditional_dynamics_mean!
+export ibis_conditional_dynamics_covar
+export ibis_conditional_dynamics_sample
+export ibis_conditional_dynamics_sample!
+export ibis_conditional_dynamics_logpdf
+export ibis_marginal_dynamics_logpdf
+
+export RaoBlackwellDynamics
+
+export rao_blackwell_conditional_dynamics_mean
+export rao_blackwell_conditional_dynamics_covar
+export rao_blackwell_conditional_dynamics_sample
+export rao_blackwell_conditional_dynamics_sample!
+export rao_blackwell_conditional_dynamics_logpdf
+
+export rao_blackwell_marginal_dynamics_mean
+export rao_blackwell_marginal_dynamics_covar
+export rao_blackwell_marginal_dynamics_sample
+export rao_blackwell_marginal_dynamics_logpdf
+export rao_blackwell_marginal_dynamics_sample_and_logpdf
+export rao_blackwell_dynamics_update
+export rao_blackwell_dynamics_update!
+
+export StochasticPolicy
+export StatefulStochasticPolicy
+export StatefulHomoschedasticPolicy
+export StatefulHeteroschedasticPolicy
+export UniformStochasticPolicy
+export MaxActionPolicy
+export PRBSStochasticPolicy
+export MyopicAdaptiveIBISPolicy
+export MyopicAdaptiveRaoBlackwellPolicy
+
+export policy_mean
+export policy_sample
+export policy_logpdf
+export policy_entropy
+
+export ClosedLoop
+
+export closedloop_mean
+export closedloop_sample
+export closedloop_logpdf
+
+export IBISClosedLoop
+
+export ibis_conditional_closedloop_mean
+export ibis_conditional_closedloop_sample
+export ibis_conditional_closedloop_sample!
+export ibis_marginal_closedloop_sample
+export ibis_marginal_closedloop_sample!
+export ibis_conditional_closedloop_logpdf
+
+export RaoBlackwellClosedLoop
+
+export rao_blackwell_marginal_closedloop_mean
+export rao_blackwell_marginal_closedloop_sample
+export rao_blackwell_marginal_closedloop_logpdf
+export rao_blackwell_marginal_closedloop_sample_and_logpdf
+
+export IBISAdaptiveLoop
+export RaoBlackwellAdaptiveLoop
+
+export ibis_marginal_adaptive_loop_sample
+export rao_blackwell_marginal_adaptive_loop_sample
+
+export ibis_step!, ibis!
+export batch_ibis_step!, batch_ibis!
+export smc_step!, smc
+export csmc_step!, csmc
+
+export smc_step_with_ibis_marginal_dynamics!
+export csmc_step_with_ibis_marginal_dynamics!
+
+export smc_step_with_rao_blackwell_marginal_dynamics!
+export csmc_step_with_rao_blackwell_marginal_dynamics!
+
+export smc_with_ibis_marginal_dynamics
+export csmc_with_ibis_marginal_dynamics
+
+export smc_with_rao_blackwell_marginal_dynamics
+export csmc_with_rao_blackwell_marginal_dynamics
+
+export myopic_smc_step_with_ibis_marginal_dynamics!
+export myopic_smc_with_ibis_marginal_dynamics
+
+export myopic_smc_step_with_rao_blackwell_marginal_dynamics!
+export myopic_smc_with_rao_blackwell_marginal_dynamics
+
+export policy_gradient_objective
+export maximization!
+
+export score_climbing
+export markovian_score_climbing
+
+export score_climbing_with_ibis_marginal_dynamics
+export markovian_score_climbing_with_ibis_marginal_dynamics
+
+export score_climbing_with_rao_blackwell_marginal_dynamics
+export markovian_score_climbing_with_rao_blackwell_marginal_dynamics
+
+export compute_sPCE
+export compute_sPCE_for_myopic_adaptive_policy
 
 end
