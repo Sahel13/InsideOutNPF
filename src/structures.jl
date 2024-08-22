@@ -12,8 +12,9 @@ mutable struct StateStruct
     log_weights_increment::Vector{Float64}
     log_evidence::Float64
     cumulative_return::Vector{Float64}
-    resampled_idx::Vector{Int}
+    resampled_idx::Matrix{Int}
     rvs::Vector{Float64}
+    unresampled_trajectories::Array{Float64,3}
 end
 
 
@@ -28,8 +29,9 @@ function StateStruct(
     log_weights_increment = zeros(nb_trajectories)
     log_evidence = 0.0
     cumulative_return = zeros(nb_trajectories)
-    resampled_idx = Vector{Int}(undef, nb_trajectories)
+    resampled_idx = Matrix{Int}(undef, nb_trajectories, nb_steps)
     rvs = Vector{Float64}(undef, nb_trajectories)
+    unresampled_trajectories = deepcopy(trajectories)
 
     return StateStruct(
         state_dim,
@@ -42,7 +44,8 @@ function StateStruct(
         log_evidence,
         cumulative_return,
         resampled_idx,
-        rvs
+        rvs,
+        unresampled_trajectories
     )
 end
 

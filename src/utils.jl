@@ -379,19 +379,19 @@ end
 end
 
 
-function multinomial_resampling!(state_struct::StateStruct)
+function multinomial_resampling!(state_struct::StateStruct, time_idx::Int)
     nb_particles = state_struct.nb_trajectories
     uniforms = rand(nb_particles + 1)
     cs = cumsum(-1.0 .* log.(uniforms))
     inverse_cdf!(
-        state_struct.resampled_idx,
+        view(state_struct.resampled_idx, :, time_idx),
         cs[begin:end-1] ./ cs[end],
         state_struct.weights,
     )
 end
 
 
-function systematic_resampling!(state_struct::StateStruct)
+function systematic_resampling!(state_struct::StateStruct, time_idx::Int)
     uniform = rand()
     map!(
         i -> (uniform + i) / state_struct.nb_trajectories,
@@ -399,7 +399,7 @@ function systematic_resampling!(state_struct::StateStruct)
         0:state_struct.nb_trajectories - 1
     )
     inverse_cdf!(
-        state_struct.resampled_idx,
+        view(state_struct.resampled_idx, :, time_idx),
         state_struct.rvs,
         state_struct.weights,
     )
@@ -458,4 +458,23 @@ end
     # In the case where the weights sum to slightly less than 1
     ErrorException("Weights do not sum up to one")
     return NaN
+end
+
+
+function genealogy_tracker(
+    trajectories::AbstractArray{Float64,3},
+    resampled_idx::AbstractMatrix{Int},
+    time_idx::Int,
+    n::Int
+)
+    out_traj = Matrix{Float64}(undef, size(trajectories, 1), time_idx + 1)
+    # Start with the current particle $Z_t^n$.
+    idx = n
+    out_traj[:, time_idx + 1] = trajectories[:, time_idx + 1, idx]
+    # Follow the genealogy back in time.
+    for i = time_idx:-1:1
+        idx = resampled_idx[idx, i]
+        out_traj[:, i] = trajectories[:, i, idx]
+    end
+    return out_traj
 end
