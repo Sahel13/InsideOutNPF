@@ -10,13 +10,12 @@ function smc_step_with_ibis_marginal_dynamics!(
     state_struct::StateStruct,
     param_struct::IBISParamStruct
 )
-    if effective_sample_size(state_struct.weights) < 0.75 * state_struct.nb_trajectories
+    if effective_sample_size(state_struct.weights[:, time_idx]) < 0.75 * state_struct.nb_trajectories
         # Get resampled indices
         systematic_resampling!(state_struct, time_idx)
         resampling_indices = state_struct.resampled_idx[:, time_idx]
 
         # Resample trajectories
-        state_struct.weights .= 1 / state_struct.nb_trajectories
         state_struct.log_weights .= 0.0
         state_struct.log_weights_increment .= 0.0
         state_struct.trajectories .= @view state_struct.trajectories[:, :, resampling_indices]
@@ -79,7 +78,7 @@ function smc_step_with_ibis_marginal_dynamics!(
     state_struct.log_evidence += logsumexp(state_struct.log_weights_increment) - log(state_struct.nb_trajectories)
 
     # Normalize the weights
-    normalize_weights!(state_struct)
+    softmax!(view(state_struct.weights, :, time_idx + 1), state_struct.log_weights)
 end
 
 
@@ -93,14 +92,13 @@ function csmc_step_with_ibis_marginal_dynamics!(
     state_struct::StateStruct,
     param_struct::IBISParamStruct,
 )
-    if effective_sample_size(state_struct.weights) < 0.75 * state_struct.nb_trajectories
+    if effective_sample_size(state_struct.weights[:, time_idx]) < 0.75 * state_struct.nb_trajectories
         # Get resampled indices
         multinomial_resampling!(state_struct, time_idx)
         state_struct.resampled_idx[1, time_idx] = 1
         resampling_indices = state_struct.resampled_idx[:, time_idx]
 
         # Resample trajectories
-        state_struct.weights .= 1 / state_struct.nb_trajectories
         state_struct.log_weights .= 0.0
         state_struct.log_weights_increment .= 0.0
         state_struct.trajectories .= @view state_struct.trajectories[:, :, resampling_indices]
@@ -164,7 +162,7 @@ function csmc_step_with_ibis_marginal_dynamics!(
     state_struct.log_evidence += logsumexp(state_struct.log_weights_increment) - log(state_struct.nb_trajectories)
 
     # Normalize the weights
-    normalize_weights!(state_struct)
+    softmax!(view(state_struct.weights, :, time_idx + 1), state_struct.log_weights)
 end
 
 

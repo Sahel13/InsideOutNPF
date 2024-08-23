@@ -71,7 +71,7 @@ function markovian_score_climbing_with_ibis_marginal_dynamics(
                 tempering,
                 reference
             )
-            idx = rand(Categorical(state_struct.weights))
+            idx = rand(Categorical(state_struct.weights[:, end]))
             reference = IBISReference(
                 state_struct.trajectories[:, :, idx],
                 param_struct.particles[:, :, :, idx],
@@ -81,7 +81,7 @@ function markovian_score_climbing_with_ibis_marginal_dynamics(
             )
         end
 
-        idx = rand(Categorical(state_struct.weights), nb_trajectories)
+        idx = rand(Categorical(state_struct.weights[:, end]), nb_trajectories)
         samples = state_struct.trajectories[:, :, idx]
 
         # maximization step

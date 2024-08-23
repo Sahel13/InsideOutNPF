@@ -386,7 +386,7 @@ function multinomial_resampling!(state_struct::StateStruct, time_idx::Int)
     inverse_cdf!(
         view(state_struct.resampled_idx, :, time_idx),
         cs[begin:end-1] ./ cs[end],
-        state_struct.weights,
+        view(state_struct.weights, :, time_idx)
     )
 end
 
@@ -401,7 +401,7 @@ function systematic_resampling!(state_struct::StateStruct, time_idx::Int)
     inverse_cdf!(
         view(state_struct.resampled_idx, :, time_idx),
         state_struct.rvs,
-        state_struct.weights,
+        view(state_struct.weights, :, time_idx)
     )
 end
 

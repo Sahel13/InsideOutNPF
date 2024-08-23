@@ -7,7 +7,7 @@ mutable struct StateStruct
     nb_steps::Int
     nb_trajectories::Int
     trajectories::Array{Float64,3}
-    weights::Vector{Float64}
+    weights::Matrix{Float64}
     log_weights::Vector{Float64}
     log_weights_increment::Vector{Float64}
     log_evidence::Float64
@@ -24,7 +24,7 @@ function StateStruct(
     nb_trajectories::Int,
     trajectories::Array{Float64,3}
 )
-    weights = fill(1 / nb_trajectories, nb_trajectories)
+    weights = fill(1 / nb_trajectories, nb_trajectories, nb_steps + 1)
     log_weights = zeros(nb_trajectories)
     log_weights_increment = zeros(nb_trajectories)
     log_evidence = 0.0

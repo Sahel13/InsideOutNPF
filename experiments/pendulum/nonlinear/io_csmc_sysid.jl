@@ -111,7 +111,7 @@ state_struct, param_struct = smc_with_ibis_marginal_dynamics(
     slew_rate_penalty,
     tempering,
 )
-idx = rand(Categorical(state_struct.weights))
+idx = rand(Categorical(state_struct.weights[:, end]))
 reference = IBISReference(
     state_struct.trajectories[:, :, idx],
     param_struct.particles[:, :, :, idx],
