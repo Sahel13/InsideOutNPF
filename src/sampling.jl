@@ -102,11 +102,6 @@ function csmc_with_ibis_marginal_dynamics(
             param_struct,
         )
 
-        param_struct.particles[:, time_idx+1, :, 1] .= reference.particles[:, time_idx+1, :]
-        param_struct.weights[time_idx+1, :, 1] .= reference.weights[time_idx+1, :]
-        param_struct.log_weights[time_idx+1, :, 1] .= reference.log_weights[time_idx+1, :]
-        param_struct.log_likelihoods[time_idx+1, :, 1] .= reference.log_likelihoods[time_idx+1, :]
-
         tasks = map(zip(trajectory_views, param_struct_views)) do (traj_view, struct_view)
             @spawn begin
                 batch_ibis_step!(
@@ -121,6 +116,11 @@ function csmc_with_ibis_marginal_dynamics(
             end
         end
         fetch.(tasks);
+
+        param_struct.particles[:, time_idx+1, :, 1] .= reference.particles[:, time_idx+1, :]
+        param_struct.weights[time_idx+1, :, 1] .= reference.weights[time_idx+1, :]
+        param_struct.log_weights[time_idx+1, :, 1] .= reference.log_weights[time_idx+1, :]
+        param_struct.log_likelihoods[time_idx+1, :, 1] .= reference.log_likelihoods[time_idx+1, :]
     end
     return state_struct, param_struct
 end
