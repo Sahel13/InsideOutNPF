@@ -102,6 +102,7 @@ struct IBISParamStruct{
     E<:AbstractArray{Int},
     F<:AbstractArray{Float64},
     G<:AbstractArray{Float64},
+    H<:AbstractArray{Float64},
 }
     param_dim::Int
     nb_particles::Int
@@ -112,6 +113,7 @@ struct IBISParamStruct{
     resampled_idx::E
     rvs::F
     scratch::G
+    raw_particles::H
 end
 
 
@@ -129,6 +131,7 @@ function IBISParamStruct(
     log_likelihoods = Array{Float64,3}(undef, nb_steps + 1, nb_particles, nb_trajectories)
     resampled_idx = Matrix{Int}(undef, nb_particles, nb_trajectories)
     rvs = Matrix{Float64}(undef, nb_particles, nb_trajectories)
+    raw_particles = deepcopy(particles)
 
     param_matrix = rand(param_prior, nb_particles, nb_trajectories)
     for m = 1:nb_particles
@@ -148,6 +151,7 @@ function IBISParamStruct(
         resampled_idx,
         rvs,
         scratch,
+        raw_particles
     )
 end
 
@@ -166,6 +170,7 @@ function view_struct(
         view(param_struct.resampled_idx, :, range),
         view(param_struct.rvs, :, range),
         view(param_struct.scratch, :, :, range),
+        view(param_struct.raw_particles, :, :, :, range)
     )
 end
 
@@ -184,6 +189,7 @@ function view_struct(
         view(param_struct.resampled_idx, :, idx),
         view(param_struct.rvs, :, idx),
         view(param_struct.scratch, :, :, idx),
+        view(param_struct.raw_particles, :, :, :, idx)
     )
 end
 

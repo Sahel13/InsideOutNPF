@@ -131,13 +131,14 @@ learner_loop, _ = markovian_score_climbing_with_ibis_marginal_dynamics(
     learner_loop,
     evaluator_loop,
     param_prior,
-    param_proposal,
-    nb_ibis_moves,
     action_penalty,
     slew_rate_penalty,
     tempering,
     reference,
     nb_csmc_moves,
+    true,
+    param_proposal,
+    nb_ibis_moves,
     true
 )
 

@@ -52,6 +52,7 @@ function smc_with_ibis_marginal_dynamics(
             end
         end
         fetch.(tasks);
+        param_struct.raw_particles[:, time_idx+1, :, :] = param_struct.particles[:, time_idx+1, :, :]
     end
     return state_struct, param_struct
 end
@@ -70,6 +71,7 @@ function csmc_with_ibis_marginal_dynamics(
     slew_rate_penalty::Float64,
     tempering::Float64,
     reference::IBISReference,
+    ibis::Bool = true,
     nb_threads::Int = 10,
 ) where {T<:Function}
 
@@ -79,10 +81,14 @@ function csmc_with_ibis_marginal_dynamics(
 
     state_struct.trajectories[:, 1, 1] .= reference.trajectory[:, 1]
     state_struct.unresampled_trajectories[:, 1, 1] .= reference.trajectory[:, 1]
+
     param_struct.particles[:, 1, :, 1] .= reference.particles[:, 1, :]
-    param_struct.weights[1, :, 1] .= reference.weights[1, :]
-    param_struct.log_weights[1, :, 1] .= reference.log_weights[1, :]
-    param_struct.log_likelihoods[1, :, 1] .= reference.log_likelihoods[1, :]
+    param_struct.raw_particles[:, 1, :, 1] .= reference.particles[:, 1, :]
+    if ibis
+        param_struct.weights[1, :, 1] .= reference.weights[1, :]
+        param_struct.log_weights[1, :, 1] .= reference.log_weights[1, :]
+        param_struct.log_likelihoods[1, :, 1] .= reference.log_likelihoods[1, :]
+    end
 
     chunk_size = round(Int, (nb_trajectories - 1) / nb_threads)
     ranges = partition(2:nb_trajectories, chunk_size)
@@ -102,25 +108,39 @@ function csmc_with_ibis_marginal_dynamics(
             param_struct,
         )
 
-        tasks = map(zip(trajectory_views, param_struct_views)) do (traj_view, struct_view)
-            @spawn begin
-                batch_ibis_step!(
-                    time_idx,
-                    traj_view,
+        if ibis
+            tasks = map(zip(trajectory_views, param_struct_views)) do (traj_view, struct_view)
+                @spawn begin
+                    batch_ibis_step!(
+                        time_idx,
+                        traj_view,
+                        closedloop.dyn,
+                        param_prior,
+                        param_proposal,
+                        nb_ibis_moves,
+                        struct_view
+                    );
+                end
+            end
+            fetch.(tasks);
+
+            param_struct.weights[time_idx+1, :, 1] .= reference.weights[time_idx+1, :]
+            param_struct.log_weights[time_idx+1, :, 1] .= reference.log_weights[time_idx+1, :]
+            param_struct.log_likelihoods[time_idx+1, :, 1] .= reference.log_likelihoods[time_idx+1, :]
+        else
+            for n = 1:nb_trajectories
+                inner_pf_step!(
+                    view_struct(param_struct, n),
                     closedloop.dyn,
+                    view(state_struct.trajectories, :, :, n),
                     param_prior,
-                    param_proposal,
-                    nb_ibis_moves,
-                    struct_view
-                );
+                    time_idx
+                )
             end
         end
-        fetch.(tasks);
 
         param_struct.particles[:, time_idx+1, :, 1] .= reference.particles[:, time_idx+1, :]
-        param_struct.weights[time_idx+1, :, 1] .= reference.weights[time_idx+1, :]
-        param_struct.log_weights[time_idx+1, :, 1] .= reference.log_weights[time_idx+1, :]
-        param_struct.log_likelihoods[time_idx+1, :, 1] .= reference.log_likelihoods[time_idx+1, :]
+        param_struct.raw_particles[:, time_idx+1, :, :] = param_struct.particles[:, time_idx+1, :, :]
     end
     return state_struct, param_struct
 end

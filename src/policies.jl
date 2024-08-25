@@ -81,6 +81,15 @@ function policy_mean(
 end
 
 
+function initialize_encoder(
+    sp::StatefulHomoschedasticPolicy,
+    zs::AbstractMatrix{Float64}
+)
+    feats = reduce(hcat, map(sp.feature_fn, eachcol(zs)))
+    return sp.encoder_fn(feats)
+end
+
+
 function policy_sample(
     sp::StatefulHomoschedasticPolicy,
     zs::AbstractMatrix{Float64}

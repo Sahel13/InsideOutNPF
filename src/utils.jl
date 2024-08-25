@@ -461,20 +461,45 @@ end
 end
 
 
-function genealogy_tracker(
+function genealogy_tracer(
     trajectories::AbstractArray{Float64,3},
     resampled_idx::AbstractMatrix{Int},
     time_idx::Int,
     n::Int
 )
-    out_traj = Matrix{Float64}(undef, size(trajectories, 1), time_idx + 1)
+    """
+    Returns a trajectory vector of length time_idx.
+    """
+    out_traj = Matrix{Float64}(undef, size(trajectories, 1), time_idx)
     # Start with the current particle $Z_t^n$.
     idx = n
-    out_traj[:, time_idx + 1] = trajectories[:, time_idx + 1, idx]
+    out_traj[:, time_idx] = trajectories[:, time_idx, idx]
     # Follow the genealogy back in time.
-    for i = time_idx:-1:1
+    for i = (time_idx - 1):-1:1
         idx = resampled_idx[idx, i]
         out_traj[:, i] = trajectories[:, i, idx]
     end
     return out_traj
+end
+
+
+function genealogy_tracer(
+    param_struct::IBISParamStruct,
+    resampled_idx::Vector{Int},
+    time_idx::Int
+)
+    """
+    Returns a genealogy for the theta particles.
+    """
+    p = param_struct
+    ref_trajectory = Array{Float64,3}(undef, p.param_dim, time_idx + 1, p.nb_particles)
+    # Start at the final time step.
+    idx = resampled_idx[end]
+    ref_trajectory[:, end, :] = p.raw_particles[:, end, :, idx]
+    # Follow the genealogy back in time.
+    for i = time_idx:-1:1
+        idx = resampled_idx[i]
+        ref_trajectory[:, i, :] = p.raw_particles[:, i, :, idx]
+    end
+    return ref_trajectory
 end
