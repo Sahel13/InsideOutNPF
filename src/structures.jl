@@ -7,13 +7,14 @@ mutable struct StateStruct
     nb_steps::Int
     nb_trajectories::Int
     trajectories::Array{Float64,3}
-    weights::Vector{Float64}
+    weights::Matrix{Float64}
     log_weights::Vector{Float64}
     log_weights_increment::Vector{Float64}
     log_evidence::Float64
     cumulative_return::Vector{Float64}
-    resampled_idx::Vector{Int}
+    resampled_idx::Matrix{Int}
     rvs::Vector{Float64}
+    unresampled_trajectories::Array{Float64,3}
 end
 
 
@@ -23,13 +24,14 @@ function StateStruct(
     nb_trajectories::Int,
     trajectories::Array{Float64,3}
 )
-    weights = fill(1 / nb_trajectories, nb_trajectories)
+    weights = fill(1 / nb_trajectories, nb_trajectories, nb_steps + 1)
     log_weights = zeros(nb_trajectories)
     log_weights_increment = zeros(nb_trajectories)
     log_evidence = 0.0
     cumulative_return = zeros(nb_trajectories)
-    resampled_idx = Vector{Int}(undef, nb_trajectories)
+    resampled_idx = Matrix{Int}(undef, nb_trajectories, nb_steps)
     rvs = Vector{Float64}(undef, nb_trajectories)
+    unresampled_trajectories = deepcopy(trajectories)
 
     return StateStruct(
         state_dim,
@@ -42,7 +44,8 @@ function StateStruct(
         log_evidence,
         cumulative_return,
         resampled_idx,
-        rvs
+        rvs,
+        unresampled_trajectories
     )
 end
 
@@ -99,6 +102,7 @@ struct IBISParamStruct{
     E<:AbstractArray{Int},
     F<:AbstractArray{Float64},
     G<:AbstractArray{Float64},
+    H<:AbstractArray{Float64},
 }
     param_dim::Int
     nb_particles::Int
@@ -109,6 +113,7 @@ struct IBISParamStruct{
     resampled_idx::E
     rvs::F
     scratch::G
+    raw_particles::H
 end
 
 
@@ -126,6 +131,7 @@ function IBISParamStruct(
     log_likelihoods = Array{Float64,3}(undef, nb_steps + 1, nb_particles, nb_trajectories)
     resampled_idx = Matrix{Int}(undef, nb_particles, nb_trajectories)
     rvs = Matrix{Float64}(undef, nb_particles, nb_trajectories)
+    raw_particles = deepcopy(particles)
 
     param_matrix = rand(param_prior, nb_particles, nb_trajectories)
     for m = 1:nb_particles
@@ -145,6 +151,7 @@ function IBISParamStruct(
         resampled_idx,
         rvs,
         scratch,
+        raw_particles
     )
 end
 
@@ -163,6 +170,7 @@ function view_struct(
         view(param_struct.resampled_idx, :, range),
         view(param_struct.rvs, :, range),
         view(param_struct.scratch, :, :, range),
+        view(param_struct.raw_particles, :, :, :, range)
     )
 end
 
@@ -181,6 +189,7 @@ function view_struct(
         view(param_struct.resampled_idx, :, idx),
         view(param_struct.rvs, :, idx),
         view(param_struct.scratch, :, :, idx),
+        view(param_struct.raw_particles, :, :, :, idx)
     )
 end
 

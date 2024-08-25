@@ -9,6 +9,7 @@ include("bijector.jl")
 include("utils.jl")
 
 include("ibis_methods.jl")
+include("inner_pf.jl")
 include("smc_methods.jl")
 include("sampling.jl")
 include("algorithms.jl")

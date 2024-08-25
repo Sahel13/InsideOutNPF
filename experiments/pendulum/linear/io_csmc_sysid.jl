@@ -12,7 +12,6 @@ import Bijectors
 
 include("./environment.jl")
 
-using .PendulumEnvironment: xdim, udim
 using .PendulumEnvironment: init_state
 using .PendulumEnvironment: ibis_dynamics
 using .PendulumEnvironment: param_prior
@@ -24,6 +23,11 @@ using .PendulumEnvironment: ctl_feature_fn
 
 
 Random.seed!(1)
+
+_param_prior = MvNormal(
+    param_prior.mean,
+    param_prior.covar
+)
 
 input_dim = 2
 output_dim = 1
@@ -83,12 +87,12 @@ evaluator_loop = IBISClosedLoop(
 )
 
 action_penalty = 0.0
-slew_rate_penalty = 0.2
+slew_rate_penalty = 0.1
 tempering = 1.0
 
-nb_steps = 50
-nb_trajectories = 256
-nb_particles = 128
+nb_steps = 25
+nb_trajectories = 128
+nb_particles = 64
 
 nb_ibis_moves = 3
 nb_csmc_moves = 1
@@ -104,7 +108,7 @@ state_struct, param_struct = smc_with_ibis_marginal_dynamics(
     nb_particles,
     init_state,
     learner_loop,
-    param_prior,
+    _param_prior,
     param_proposal,
     nb_ibis_moves,
     action_penalty,
@@ -130,7 +134,7 @@ learner_loop, _ = markovian_score_climbing_with_ibis_marginal_dynamics(
     init_state,
     learner_loop,
     evaluator_loop,
-    param_prior,
+    _param_prior,
     action_penalty,
     slew_rate_penalty,
     tempering,
@@ -142,4 +146,4 @@ learner_loop, _ = markovian_score_climbing_with_ibis_marginal_dynamics(
     true
 )
 
-# jldsave("./experiments/pendulum/nonlinear/data/nonlinear_pendulum_ibis_csmc_ctl.jld2"; evaluator_loop.ctl)
+# jldsave("./experiments/pendulum/linear/data/linear_pendulum_ibis_csmc_ctl.jld2"; evaluator_loop.ctl)
