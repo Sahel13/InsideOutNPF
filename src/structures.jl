@@ -131,7 +131,6 @@ function IBISParamStruct(
     log_likelihoods = Array{Float64,3}(undef, nb_steps + 1, nb_particles, nb_trajectories)
     resampled_idx = Matrix{Int}(undef, nb_particles, nb_trajectories)
     rvs = Matrix{Float64}(undef, nb_particles, nb_trajectories)
-    raw_particles = deepcopy(particles)
 
     param_matrix = rand(param_prior, nb_particles, nb_trajectories)
     for m = 1:nb_particles
@@ -140,6 +139,7 @@ function IBISParamStruct(
         end
         logpdf!(view(log_likelihoods, 1, m, :), param_prior, particles[:, 1, m, :])
     end
+    raw_particles = deepcopy(particles)
 
     return IBISParamStruct(
         param_dim,
