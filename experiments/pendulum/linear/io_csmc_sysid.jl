@@ -99,7 +99,7 @@ nb_csmc_moves = 1
 
 nb_iter = 25
 opt_state = Flux.setup(Flux.Optimise.Adam(1e-3), learner_loop)
-batch_size = 64
+batch_size = 16
 
 Flux.reset!(learner_loop.ctl)
 state_struct, param_struct = smc_with_ibis_marginal_dynamics(
@@ -124,6 +124,8 @@ reference = IBISReference(
     param_struct.log_likelihoods[:, :, idx]
 )
 
+backward_sample = true
+
 learner_loop, _ = markovian_score_climbing_with_ibis_marginal_dynamics(
     nb_iter,
     opt_state,
@@ -140,7 +142,7 @@ learner_loop, _ = markovian_score_climbing_with_ibis_marginal_dynamics(
     tempering,
     reference,
     nb_csmc_moves,
-    true,
+    backward_sample,
     param_proposal,
     nb_ibis_moves,
     true

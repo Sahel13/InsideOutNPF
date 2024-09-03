@@ -195,7 +195,7 @@ function backward_sampling(
     param_struct::IBISParamStruct,
     closed_loop::IBISClosedLoop,
     eta::Float64,
-    num_trajs::Int = 16
+    num_trajs::Int
 )
     """
     Backward sampling function that returns `num_trajs` trajectories.
@@ -235,7 +235,10 @@ function markovian_score_climbing_with_ibis_marginal_dynamics(
     backward_sample::Bool = false,
     param_proposal::Union{T, Nothing} = nothing,
     nb_ibis_moves::Union{Int, Nothing} = nothing,
-    verbose::Bool = false
+    verbose::Bool = false,
+    nb_trajectories_eval::Int = 256,
+    nb_particles_eval::Int = 256,
+    nb_backward_samples::Int = 32
 ) where {T<:Function}
 
     if !backward_sample
@@ -251,8 +254,8 @@ function markovian_score_climbing_with_ibis_marginal_dynamics(
     Flux.reset!(evaluator.ctl)
     state_struct, param_struct = smc_with_ibis_marginal_dynamics(
         nb_steps,
-        nb_trajectories,
-        nb_particles,
+        nb_trajectories_eval,
+        nb_particles_eval,
         init_state,
         evaluator,
         param_prior,
@@ -330,11 +333,12 @@ function markovian_score_climbing_with_ibis_marginal_dynamics(
                 state_struct,
                 param_struct,
                 learner,
-                tempering
+                tempering,
+                nb_backward_samples
             )
             samples = trajectories
         else
-            idx = rand(Categorical(state_struct.weights[:, end]), nb_trajectories)
+            idx = rand(Categorical(state_struct.weights[:, end]), nb_backward_samples)
             samples = state_struct.trajectories[:, :, idx]
         end
 
@@ -357,8 +361,8 @@ function markovian_score_climbing_with_ibis_marginal_dynamics(
         Flux.reset!(evaluator.ctl)
         state_struct, _ = smc_with_ibis_marginal_dynamics(
             nb_steps,
-            nb_trajectories,
-            nb_particles,
+            nb_trajectories_eval,
+            nb_particles_eval,
             init_state,
             evaluator,
             param_prior,
